@@ -147,11 +147,8 @@ export default function CatalogPage() {
             price: product.discount > 0 
                 ? product.price * (1 - product.discount / 100)
                 : product.price,
-            originalPrice: product.price,
-            discount: product.discount,
             image: getProductImage(product.category, index),
             productId: product.id,
-            quantity: 1
         });
         // Alert удален - счетчик в Header покажет добавление
     };

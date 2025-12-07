@@ -85,7 +85,6 @@ export default function Home() {
       price: product.price,
       image: getProductImage(product.category, index),
       productId: product.id,
-      quantity: 1
     })
     // Alert удален - счетчик в Header покажет добавление
   }
