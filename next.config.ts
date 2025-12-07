@@ -8,10 +8,9 @@ const nextConfig = {
     unoptimized: true,
   },
 
-  // ВАЖНО: Раскомментируйте строку ниже, если ваш сайт НЕ открывается
-  // или вы видите ошибку 404 после деплоя.
-  // Замените 'my-marketplace' на имя вашего репозитория на GitHub.
-  // basePath: '/my-marketplace',
+  // ВАЖНО: Это решает проблему со стилями. Путь должен совпадать с именем репозитория
+  basePath: '/market',
 }
+
 
 module.exports = nextConfig
