@@ -1,54 +1,66 @@
 name: Deploy to GitHub Pages
 
 on:
+  # Запускается при пуше в ветку main
   push:
     branches: ['main']
-  workflow_dispatch: # Позволяет запускать сборку вручную из вкладки Actions
+  # Позволяет запускать сборку вручную из интерфейса GitHub Actions
+  workflow_dispatch:
 
+# Разрешения, необходимые для развертывания на GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Параллельные запуски одного workflow не будут мешать друг другу
 concurrency:
   group: 'pages'
   cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # ОС для сборки
+    env: # Ключевая часть: передаем секреты как переменные окружения
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
     steps:
-      - name: Checkout
+      # 1. Копируем ваш код в виртуальную среду
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # 2. Устанавливаем Node.js (версия 20, стабильная LTS)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm' # Кэширование node_modules для ускорения сборок
 
+      # 3. Устанавливаем зависимости (строгий режим для CI)
       - name: Install dependencies
         run: npm ci
 
-- name: Build with Next.js
-  run: npm run build
-  env:
-    NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      # 4. Собираем проект (переменные окружения уже доступны)
+      - name: Build with Next.js
+        run: npm run build
 
+      # 5. Подготавливаем артефакт для GitHub Pages (файлы из папки /out)
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./out # Важно: папка, куда Next.js помещает готовый сайт
+          path: ./out # Папка, куда Next.js помещает готовый статический сайт
 
+  # 6. Отправляем собранный сайт на хостинг GitHub Pages
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: build # Этот шаг запустится только после успешной сборки
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
